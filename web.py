@@ -1,9 +1,10 @@
-import os, re, urllib, cgi, urlparse
+import os, re, urllib, urlparse
 
 from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash
 
 from persist import mongo
 from facebook import get_profile
+
 
 MONGO_URL = os.environ.get("MONGOLAB_URI", "mongodb://localhost:27017/test_database")
 
@@ -14,18 +15,21 @@ def parseMongoConfig():
     match = re.match(r"mongodb://(.*):(.*)@(.*):(.*)/(.*)", mongoUrl)
     return match.groups()
 
-def get_secret_app_id():
+MONGO_USERNAME, MONGO_PASSWORD, MONGO_HOST, MONGO_PORT, MONGO_DB = parseMongoConfig()
+
+try:
     import secrets
+except ImportError:
+    secrets = {}
+    secrets.facebook_app_id = ""
+    secrets.facebook_app_secret = ""
+
+def get_secret_app_id():
     return secrets.facebook_app_id
 
 def get_secret_app_secret():
-    import secrets
     return secrets.facebook_app_secret
 
-MONGO_USERNAME, MONGO_PASSWORD, MONGO_HOST, MONGO_PORT, MONGO_DB = parseMongoConfig()
-
-USERNAME = "DAVE"
-PASSWORD = "tacos"
 SECRET_KEY = os.environ.get("FLASK_SECRET_KEY", 'development key')
 DEBUG = True
 
@@ -60,21 +64,6 @@ def add_entry():
     g.mongo.database.entries.insert(entry)
     flash('New entry was successfully posted')
     return redirect(url_for('show_entries'))
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    error = None
-    if request.method == 'POST':
-        if request.form['username'] != app.config['USERNAME']:
-            error = 'Invalid username'
-        elif request.form['password'] != app.config['PASSWORD']:
-            error = 'Invalid password'
-        else:
-            session['logged_in'] = True
-            flash('You were logged in')
-            return redirect(url_for('show_entries'))
-    return render_template('login.html', error=error)
-
 
 @app.route('/facelogin', methods=['GET', 'POST'])
 def face_login():

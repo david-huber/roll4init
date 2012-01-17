@@ -5,4 +5,4 @@ lib
 .Python
 .idea
 *.pyc
-secrets.py
+secrets.ini
