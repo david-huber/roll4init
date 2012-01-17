@@ -20,7 +20,7 @@ MONGO_USERNAME, MONGO_PASSWORD, MONGO_HOST, MONGO_PORT, MONGO_DB = parseMongoCon
 USERNAME = "DAVE"
 PASSWORD = "tacos"
 SECRET_KEY = os.environ.get("FLASK_SECRET_KEY", 'development key')
-DEBUG = (SECRET_KEY != "development key")
+DEBUG = True
 
 
 app = Flask(__name__)
@@ -32,6 +32,8 @@ app.config.from_object(__name__)
 @app.before_request
 def before_request():
     g.mongo = mongo.connect_db(app)
+    if MONGO_USERNAME and MONGO_PASSWORD:
+        mongo.database.auth(MONGO_USERNAME,MONGO_PASSWORD)
 
 @app.teardown_request
 def teardown_request(exception):
