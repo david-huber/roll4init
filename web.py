@@ -32,8 +32,6 @@ app.config.from_object(__name__)
 @app.before_request
 def before_request():
     g.mongo = mongo.connect_db(app)
-    if MONGO_USERNAME and MONGO_PASSWORD:
-        g.mongo.database.auth(MONGO_USERNAME,MONGO_PASSWORD)
 
 @app.teardown_request
 def teardown_request(exception):

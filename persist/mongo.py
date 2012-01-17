@@ -1,7 +1,7 @@
 from pymongo import Connection
 
 def connect_db(app):
-    return Connection(app.config['MONGO_URL'])
+    return MongoDB(app)
 
 class MongoDB:
 
