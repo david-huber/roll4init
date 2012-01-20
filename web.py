@@ -23,7 +23,6 @@ try:
 except ImportError:
     debug = {}
 
-
 SECRET_KEY = os.environ.get("FLASK_SECRET_KEY", 'development key')
 FACEBOOK_APP_ID = os.environ.get("FACEBOOK_APP_ID")
 FACEBOOK_APP_SECRET = os.environ.get("FACEBOOK_APP_SECRET")
