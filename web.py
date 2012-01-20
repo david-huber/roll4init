@@ -9,8 +9,6 @@ from facebook import get_profile
 MONGO_URL = os.environ.get("MONGOLAB_URI", "mongodb://localhost:27017/test_database")
 
 def parseMongoConfig():
-
-    #mongodb://username:password@host:port/database
     mongoUrl = os.environ.get("MONGOLAB_URI", "mongodb://:@localhost:27017/test_database")
     match = re.match(r"mongodb://(.*):(.*)@(.*):(.*)/(.*)", mongoUrl)
     return match.groups()
