@@ -18,24 +18,15 @@ def parseMongoConfig():
 MONGO_USERNAME, MONGO_PASSWORD, MONGO_HOST, MONGO_PORT, MONGO_DB = parseMongoConfig()
 
 try:
-    import secrets
+    import debug
+    DEBUG = True
 except ImportError:
-    secrets = {}
-    secrets.facebook_app_id = ""
-    secrets.facebook_app_secret = ""
+    debug = {}
 
-def get_secret_app_id():
-    return secrets.facebook_app_id
-
-def get_secret_app_secret():
-    return secrets.facebook_app_secret
 
 SECRET_KEY = os.environ.get("FLASK_SECRET_KEY", 'development key')
-DEBUG = True
-
-FACEBOOK_APP_ID = os.environ.get("FACEBOOK_APP_ID", get_secret_app_id())
-
-FACEBOOK_APP_SECRET = os.environ.get("FACEBOOK_APP_SECRET", get_secret_app_secret())
+FACEBOOK_APP_ID = os.environ.get("FACEBOOK_APP_ID")
+FACEBOOK_APP_SECRET = os.environ.get("FACEBOOK_APP_SECRET")
 
 app = Flask(__name__)
 app.config.from_object(__name__)

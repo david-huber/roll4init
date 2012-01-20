@@ -6,3 +6,4 @@ lib
 .idea
 *.pyc
 secrets.py
+debug.py
