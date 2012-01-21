@@ -49,7 +49,8 @@ class Facebook():
         while (len(friends) > 0 and not friend_of_dm):
             friend_of_dm = any(map(lambda f: f["id"] == self.dm_id, friends))
             if not friend_of_dm:
-                friendResp = self.next(self, friendResp["paging"]["next"])
+                print(friendResp)
+                friendResp = self._next(friendResp["paging"]["next"])
                 friends = friendResp["data"]
 
         return friend_of_dm
@@ -77,4 +78,4 @@ class Facebook():
         return json.load(urllib.urlopen(url + "?" + urllib.urlencode(dict(access_token=access_token))))
 
     def _next(self, url):
-        return json.load(url)
+        return json.load(urllib.urlopen(url))
