@@ -1,16 +1,16 @@
 <!doctype html>
-<title>Flaskr</title>
+<title>roll4init</title>
 <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
 <div class=page>
     <h1>
-        Flaskr
+        roll4init
         {% if session.logged_in %}
             : Welcome, {{ session.fb_name }}
         {% endif %}
     </h1>
     <div class=metanav>
         {% if not session.logged_in %}
-        <a href="{{ url_for('face_login') }}">log in</a>
+        <a href="{{ url_for('login') }}">log in</a>
         {% else %}
         <a href="{{ url_for('logout') }}">log out</a>
         {% endif %}

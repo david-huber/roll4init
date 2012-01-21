@@ -3,7 +3,7 @@ import os, re, urllib, urlparse
 from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash
 
 from persist import mongo
-from facebook import get_profile
+from facebook import get_profile, Facebook
 
 
 MONGO_URL = os.environ.get("MONGOLAB_URI", "mongodb://localhost:27017/test_database")
@@ -24,9 +24,16 @@ except ImportError:
 SECRET_KEY = os.environ.get("FLASK_SECRET_KEY", 'development key')
 FACEBOOK_APP_ID = os.environ.get("FACEBOOK_APP_ID")
 FACEBOOK_APP_SECRET = os.environ.get("FACEBOOK_APP_SECRET")
+FACEBOOK_OAUTH = Facebook(FACEBOOK_APP_ID, FACEBOOK_APP_SECRET)
 
 app = Flask(__name__)
 app.config.from_object(__name__)
+
+authz = app.config['FACEBOOK_OAUTH'].connection
+
+@authz.tokengetter
+def get_access_token():
+    return session.get('access_token')
 
 @app.before_request
 def before_request():
@@ -41,53 +48,32 @@ def show_entries():
     entries = g.mongo.database.entries.find()
     return render_template('show_entries.html', entries=entries)
 
-@app.route('/add', methods=['POST'])
-def add_entry():
-    if not session.get('logged_in'):
-        abort(401)
+@app.route('/login')
+def login():
+    return authz.authorize(callback=request.url_root[:-1] + url_for('authorized'))
 
-    entry = {'title': request.form['title'],
-             'text' : request.form['text'] }
+@app.route('/authorized')
+@authz.authorized_handler
+def authorized(resp):
+    next_url = request.args.get('next') or url_for('show_entries')
+    if resp is None:
+        flash(u'You denied the request to sign in.')
+        return redirect(next_url)
 
-    g.mongo.database.entries.insert(entry)
-    flash('New entry was successfully posted')
-    return redirect(url_for('show_entries'))
+    session['logged_in'] = True
+    session['access_token'] = resp['access_token']
 
-@app.route('/facelogin', methods=['GET', 'POST'])
-def face_login():
-    args = dict(client_id=app.config["FACEBOOK_APP_ID"], redirect_uri=request.base_url)
-    verification_code = request.args.get("code", None)
-    if verification_code:
+    profile = get_profile(session['access_token'])
+    session['fb_id'] = profile["id"]
+    session['fb_name'] = profile["name"]
 
-        args["client_secret"] = app.config["FACEBOOK_APP_SECRET"]
-        args["code"] = verification_code
-        fb_response = urllib.urlopen(
-            "https://graph.facebook.com/oauth/access_token?" +
-            urllib.urlencode(args)).read()
-        fb_response = urlparse.parse_qs(fb_response)
-
-        access_tokens = fb_response.get("access_token", None)
-        if access_tokens and len(access_tokens) > 0:
-            access_token = access_tokens[-1]
-
-            profile = get_profile(access_token)
-            session['fb_id'] = profile["id"]
-            session['fb_name'] = profile["name"]
-            session['logged_in'] = True
-
-            flash('You were logged in')
-            return redirect(url_for('show_entries'))
-        else:
-            flash('Invalid access token')
-            return redirect(url_for('show_entries'))
-
-    else:
-        return redirect("https://graph.facebook.com/oauth/authorize?" + urllib.urlencode(args))
-
+    flash('You were logged in')
+    return redirect(next_url)
 
 @app.route('/logout')
 def logout():
     session.pop('logged_in', None)
+    session.pop('access_token', None)
     session.pop('fb_id', None)
     session.pop('fb_name', None)
     flash('You were logged out')
