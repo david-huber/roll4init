@@ -1,3 +1,5 @@
+from itertools import groupby
+
 __all__ = ['Pool']
 
 class Pool:
@@ -29,3 +31,15 @@ class Pool:
 
     def _filter_rolls(self, function):
         return Pool(filter(function, self._dice))
+
+    def __str__(self):
+        diceStrings = ["d{0}".format(d.get_sides()) for d in sorted(self._dice, key=lambda d: d.get_sides(), reverse=True)]
+        summedStrings = ["{0}{1}".format(len(list(group)), key) for key, group in groupby(diceStrings)]
+        diceStr = "+".join(summedStrings)
+
+        if self._modifier > 0:
+            diceStr += '+{0}'.format(self._modifier)
+        elif self._modifier < 0:
+            diceStr += str(self._modifier)
+
+        return diceStr

@@ -62,6 +62,36 @@ class PoolTest(unittest.TestCase):
         pool = Pool(dice=dice)
         self.assertEqual(pool.take_rolls_under(2).get_size(), 1)
 
+    def test_strOneTwentySidedDieIs1d20(self):
+        dice = [Die(sides=20)]
+        pool = Pool(dice=dice)
+        self.assertEqual(str(pool), "1d20")
+
+    def test_strOneSixSidedDieIs1d6(self):
+        dice = [Die(sides=6)]
+        pool = Pool(dice=dice)
+        self.assertEqual(str(pool), "1d6")
+
+    def test_strThreeTenSidedDiceIs3d10(self):
+        dice = [Die(sides=10) for i in range(3)]
+        pool = Pool(dice=dice)
+        self.assertEqual(str(pool), "3d10")
+
+    def test_strThreeTenSidedDicePlusFiveIs3d10plus5(self):
+        dice = [Die(sides=10) for i in range(3)]
+        pool = Pool(dice=dice, modifier=5)
+        self.assertEqual(str(pool), "3d10+5")
+
+    def test_strThreeTenSidedDiceMinusEightIs3d10minus8(self):
+        dice = [Die(sides=10) for i in range(3)]
+        pool = Pool(dice=dice, modifier=-8)
+        self.assertEqual(str(pool), "3d10-8")
+
+    def test_strTwoTwelveSidersPlusThreeFourSidersPlusOneIs2d12plus3d4plus1(self):
+        dice = [Die(sides=12), Die(sides=12), Die(sides=4), Die(sides=4), Die(sides=4)]
+        pool = Pool(dice=dice, modifier=1)
+        self.assertEqual(str(pool), "2d12+3d4+1")
+
     @patch.object(Die, 'roll')
     def test_rollRollsDie(self, dieMock):
         dieMock.return_value = 6
