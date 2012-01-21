@@ -22,3 +22,26 @@ class FighterTest(unittest.TestCase):
         fighter = Fighter(initiative = Pool(dice=[Die(sides=6) for i in range(2)]))
         self.assert_initiative_equals(fighter, 2, 6, 0)
 
+    def test_initDamakosHasName(self):
+        fighter = Fighter(name = "Damakos")
+        self.assertEquals(fighter.name, "Damakos")
+
+    def test_initTarkovHasName(self):
+        fighter = Fighter(name = "Tarkov")
+        self.assertEquals(fighter.name, "Tarkov")
+
+    def test_initWithoutNameHasNoneName(self):
+        fighter = Fighter()
+        self.assertIsNone(fighter.name)
+
+    def test_initWithoutIdHasNoneId(self):
+        fighter = Fighter()
+        self.assertIsNone(fighter.id)
+
+    def test_initWithoutIdHasNoneId(self):
+        fighter = Fighter()
+        self.assertIsNone(fighter.id)
+
+    def test_initId1HasId(self):
+        fighter = Fighter(id = 1)
+        self.assertEqual(fighter.id, 1)
