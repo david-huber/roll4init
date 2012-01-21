@@ -3,7 +3,7 @@ import os, re, urllib, urlparse
 from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash
 
 from persist import mongo
-from facebook import get_profile, Facebook
+from facebook import Facebook
 
 
 MONGO_URL = os.environ.get("MONGOLAB_URI", "mongodb://localhost:27017/test_database")
@@ -24,12 +24,12 @@ except ImportError:
 SECRET_KEY = os.environ.get("FLASK_SECRET_KEY", 'development key')
 FACEBOOK_APP_ID = os.environ.get("FACEBOOK_APP_ID")
 FACEBOOK_APP_SECRET = os.environ.get("FACEBOOK_APP_SECRET")
-FACEBOOK_OAUTH = Facebook(FACEBOOK_APP_ID, FACEBOOK_APP_SECRET)
+facebook = Facebook(FACEBOOK_APP_ID, FACEBOOK_APP_SECRET)
 
 app = Flask(__name__)
 app.config.from_object(__name__)
 
-authz = app.config['FACEBOOK_OAUTH'].connection
+authz = facebook.connection
 
 @authz.tokengetter
 def get_access_token():
@@ -60,22 +60,14 @@ def authorized(resp):
         flash(u'You denied the request to sign in.')
         return redirect(next_url)
 
-    session['logged_in'] = True
-    session['access_token'] = resp['access_token']
-
-    profile = get_profile(session['access_token'])
-    session['fb_id'] = profile["id"]
-    session['fb_name'] = profile["name"]
+    facebook.authorize(resp)
 
     flash('You were logged in')
     return redirect(next_url)
 
 @app.route('/logout')
 def logout():
-    session.pop('logged_in', None)
-    session.pop('access_token', None)
-    session.pop('fb_id', None)
-    session.pop('fb_name', None)
+    facebook.clear()
     flash('You were logged out')
     return redirect(url_for('show_entries'))
 
