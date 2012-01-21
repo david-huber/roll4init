@@ -24,11 +24,12 @@ except ImportError:
 SECRET_KEY = os.environ.get("FLASK_SECRET_KEY", 'development key')
 FACEBOOK_APP_ID = os.environ.get("FACEBOOK_APP_ID")
 FACEBOOK_APP_SECRET = os.environ.get("FACEBOOK_APP_SECRET")
-facebook = Facebook(FACEBOOK_APP_ID, FACEBOOK_APP_SECRET)
+
 
 app = Flask(__name__)
 app.config.from_object(__name__)
 
+facebook = Facebook(FACEBOOK_APP_ID, FACEBOOK_APP_SECRET, os.environ.get("DM_ID"))
 authz = facebook.connection
 
 @authz.tokengetter
@@ -60,10 +61,12 @@ def authorized(resp):
         flash(u'You denied the request to sign in.')
         return redirect(next_url)
 
-    facebook.authorize(resp)
-
-    flash('You were logged in')
+    if facebook.authorize(resp):
+        flash('You were logged in')
+    else:
+        flash('You are not authorized; you should cozy up to Dave')
     return redirect(next_url)
+
 
 @app.route('/logout')
 def logout():

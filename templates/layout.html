@@ -6,6 +6,11 @@
         roll4init
         {% if session.logged_in %}
             : Welcome, {{ session.fb_name }}
+            {% if session.dm %}
+                (DM)
+            {% else %}
+                (Player)
+            {% endif %}
         {% endif %}
     </h1>
     <div class=metanav>
