@@ -17,6 +17,13 @@ class Die:
     def get_face(self):
         return self._face
 
+    def set_face(self, value):
+        if value <= 0:
+            raise ValueError("A Die cannot show less than 0")
+        if value > self._sides:
+            raise ValueError("A Die cannot show greater than its sides")
+        self._face = value
+
     def get_sides(self):
         return self._sides
 

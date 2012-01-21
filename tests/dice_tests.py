@@ -35,6 +35,24 @@ class DieTest(unittest.TestCase):
     def test_showingNegativeOneThrowsValueException(self):
         self.assertRaises(ValueError, Die, showing=-1)
 
+    def test_setSidesToSevenOn1d6ThrowsValueException(self):
+        die = Die(sides=6)
+        self.assertRaises(ValueError, die.set_face, 7)
+
+    def test_setSidesToFiveOn1d6Shows5(self):
+        die = Die(sides=6)
+        die.set_face(5)
+        self.assertEqual(die.get_face(), 5)
+
+    def test_setSidesTo11On1d20Shows11(self):
+        die = Die(sides=20)
+        die.set_face(11)
+        self.assertEqual(die.get_face(), 11)
+
+    def test_setSidesToZeroOn1d6ThrowsValueException(self):
+        die = Die(sides=6)
+        self.assertRaises(ValueError, die.set_face, 0)
+
     @patch.object(random, 'randint')
     def test_rollCallsRandomInt(self, randintMock):
         die = Die(sides=1337)

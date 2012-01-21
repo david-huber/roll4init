@@ -1,19 +1,7 @@
-import os, re, urllib, urlparse
-
-from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash
-
+import os, re
+from flask import Flask, request, session, g, redirect, url_for, render_template, flash
 from persist import mongo
 from facebook import Facebook
-
-
-MONGO_URL = os.environ.get("MONGOLAB_URI", "mongodb://localhost:27017/test_database")
-
-def parseMongoConfig():
-    mongoUrl = os.environ.get("MONGOLAB_URI", "mongodb://:@localhost:27017/test_database")
-    match = re.match(r"mongodb://(.*):(.*)@(.*):(.*)/(.*)", mongoUrl)
-    return match.groups()
-
-MONGO_USERNAME, MONGO_PASSWORD, MONGO_HOST, MONGO_PORT, MONGO_DB = parseMongoConfig()
 
 try:
     import debug
@@ -21,10 +9,17 @@ try:
 except ImportError:
     debug = {}
 
+MONGO_URL = os.environ.get("MONGOLAB_URI", "mongodb://localhost:27017/test_database")
+
+def parseMongoConfig():
+    mongo_url = os.environ.get("MONGOLAB_URI", "mongodb://:@localhost:27017/test_database")
+    match = re.match(r"mongodb://(.*):(.*)@(.*):(.*)/(.*)", mongo_url)
+    return match.groups()
+
+MONGO_USERNAME, MONGO_PASSWORD, MONGO_HOST, MONGO_PORT, MONGO_DB = parseMongoConfig()
 SECRET_KEY = os.environ.get("FLASK_SECRET_KEY", 'development key')
 FACEBOOK_APP_ID = os.environ.get("FACEBOOK_APP_ID")
 FACEBOOK_APP_SECRET = os.environ.get("FACEBOOK_APP_SECRET")
-
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -66,7 +61,6 @@ def authorized(resp):
     else:
         flash('You are not authorized; you should cozy up to Dave')
     return redirect(next_url)
-
 
 @app.route('/logout')
 def logout():
