@@ -4,9 +4,13 @@ __all__ = ['Pool']
 
 class Pool:
 
-    def __init__(self, dice=[], modifier=0):
+    def __init__(self, dice=[], rolled=False, modifier=0):
         self._dice = tuple(d for d in dice)
         self._modifier = modifier
+        self._rolled = rolled
+
+    def is_rolled(self):
+        return self._rolled
 
     def get_size(self):
         return len(self._dice)
@@ -18,6 +22,7 @@ class Pool:
         return self._modifier
 
     def roll(self, roll_dice_while=None, roll_dice_until=None):
+        self._rolled = True
         return map(lambda d: d.roll(roll_while=roll_dice_while, roll_until=roll_dice_until), self._dice)
 
     def sum(self):
@@ -37,9 +42,14 @@ class Pool:
         summedStrings = ["{0}{1}".format(len(list(group)), key) for key, group in groupby(diceStrings)]
         diceStr = "+".join(summedStrings)
 
+        if diceStr == "":
+            diceStr = "0d"
+
         if self._modifier > 0:
             diceStr += '+{0}'.format(self._modifier)
         elif self._modifier < 0:
             diceStr += str(self._modifier)
 
+        if self._rolled and len(self._dice) > 0:
+            diceStr += " ({0})".format(self.sum())
         return diceStr

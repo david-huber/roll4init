@@ -14,6 +14,22 @@ class PoolTest(unittest.TestCase):
         pool = Pool(dice=dice)
         self.assertEqual(pool.get_size(), 4)
 
+    def test_notRolledWithFourDice(self):
+        dice = [Die() for i in range(4)]
+        pool = Pool(dice=dice)
+        self.assertFalse(pool.is_rolled())
+
+    def test_rolledWithFourDice(self):
+        dice = [Die() for i in range(4)]
+        pool = Pool(dice=dice, rolled=True)
+        self.assertTrue(pool.is_rolled())
+
+    def test_poolWithFourDiceIsRolled(self):
+        dice = [Die() for i in range(4)]
+        pool = Pool(dice=dice, rolled=False)
+        pool.roll()
+        self.assertTrue(pool.is_rolled())
+
     def test_getDiceGetsDiceInPool(self):
         dice = [Die() for i in range(4)]
         pool = Pool(dice=dice)
@@ -23,7 +39,7 @@ class PoolTest(unittest.TestCase):
         pool = Pool()
         self.assertEqual(pool.get_modifier(), 0)
 
-    def test_getModifierWithNegativeFiveModierReturnsNegative5(self):
+    def test_getModifierWithNegativeFiveModifierReturnsNegative5(self):
         pool = Pool(modifier=-5)
         self.assertEqual(pool.get_modifier(), -5)
 
@@ -62,6 +78,18 @@ class PoolTest(unittest.TestCase):
         pool = Pool(dice=dice)
         self.assertEqual(pool.take_rolls_under(2).get_size(), 1)
 
+    def test_strEmptyPoolIs0d0(self):
+        pool = Pool()
+        self.assertEqual(str(pool), "0d")
+
+    def test_strRolledEmptyPoolIs0d0(self):
+        pool = Pool(rolled=True)
+        self.assertEqual(str(pool), "0d")
+
+    def test_strRolledEmptyPoolWithPlus10ModIs0d0plus10(self):
+        pool = Pool(rolled=True, modifier=10)
+        self.assertEqual(str(pool), "0d+10")
+
     def test_strOneTwentySidedDieIs1d20(self):
         dice = [Die(sides=20)]
         pool = Pool(dice=dice)
@@ -72,10 +100,20 @@ class PoolTest(unittest.TestCase):
         pool = Pool(dice=dice)
         self.assertEqual(str(pool), "1d6")
 
+    def test_strOneSixSidedDieRolledAFiveIs1d6noted5(self):
+        dice = [Die(sides=6, showing=5)]
+        pool = Pool(dice=dice, rolled=True)
+        self.assertEqual(str(pool), "1d6 (5)")
+
     def test_strThreeTenSidedDiceIs3d10(self):
         dice = [Die(sides=10) for i in range(3)]
         pool = Pool(dice=dice)
         self.assertEqual(str(pool), "3d10")
+
+    def test_strThreeTenSidedDiceShowingSevenAndRolledIs3d10noted21(self):
+        dice = [Die(sides=10, showing=7) for i in range(3)]
+        pool = Pool(dice=dice, rolled=True)
+        self.assertEqual(str(pool), "3d10 (21)")
 
     def test_strThreeTenSidedDicePlusFiveIs3d10plus5(self):
         dice = [Die(sides=10) for i in range(3)]
@@ -88,7 +126,7 @@ class PoolTest(unittest.TestCase):
         self.assertEqual(str(pool), "3d10-8")
 
     def test_strTwoTwelveSidersPlusThreeFourSidersPlusOneIs2d12plus3d4plus1(self):
-        dice = [Die(sides=12), Die(sides=12), Die(sides=4), Die(sides=4), Die(sides=4)]
+        dice = [Die(sides=4), Die(sides=12), Die(sides=12), Die(sides=4), Die(sides=4)]
         pool = Pool(dice=dice, modifier=1)
         self.assertEqual(str(pool), "2d12+3d4+1")
 

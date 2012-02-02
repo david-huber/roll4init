@@ -53,19 +53,23 @@ class FighterRepositoryTest(unittest.TestCase):
         repo = FighterRepository(connection_mock)
         repo.remove(Fighter(name="Forel", id="1"))
         connection_mock.remove.assert_called_once_with({ "name" : "Forel", "_id" : "1" })
-    
-    def test_findOneFromCollection(self):
-        connection_mock = self.create_connection_mock()
-        connection_mock.find_one.return_value = "Whatever"
-        repo = FighterRepository(connection_mock)
-        result = repo.find_one()
-        self.assertEquals(result, "Whatever")
-        connection_mock.find_one.assert_called_once_with(spec=None)
 
-    def test_findOneWithSpecFromCollection(self):
-        connection_mock = self.create_connection_mock()
-        connection_mock.find_one.return_value = "Whatever"
-        repo = FighterRepository(connection_mock)
-        result = repo.find_one(spec="Something")
-        self.assertEquals(result, "Whatever")
-        connection_mock.find_one.assert_called_once_with(spec="Something")
+class FromDocumentTest(unittest.TestCase):
+
+    def test_fighterFromNoneDocumentReturnsNone(self):
+        fighter = fighter_from_document(None)
+        self.assertIsNone(fighter)
+
+    def test_fighterFromDictWithIdSetsId(self):
+        fighter = fighter_from_document({"_id" : "1234"})
+        self.assertEqual(fighter.id, "1234")
+
+    def test_fighterFromDictWithNameSetsJustName(self):
+        fighter = fighter_from_document({"name" : "Damakos"})
+        self.assertEqual(fighter.id, None)
+        self.assertEqual(fighter.name, "Damakos")
+
+    def test_fighterFromDictWithNameAndIdSetsBoth(self):
+        fighter = fighter_from_document({"name" : "Forel", "_id" : "555"})
+        self.assertEqual(fighter.id, "555")
+        self.assertEqual(fighter.name, "Forel")

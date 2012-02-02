@@ -1,4 +1,12 @@
-__all__ = ['FighterRepository']
+from tracker.fighter import Fighter
+
+__all__ = ['FighterRepository', 'fighter_from_document']
+
+
+def fighter_from_document(doc):
+    if doc is None:
+        return None
+    return Fighter(id=doc.get("_id"), name=doc.get("name"))
 
 class FighterRepository:
     
@@ -25,5 +33,3 @@ class FighterRepository:
             raise ValueError("fighter must be identified by name or id")
         self.collection.remove(doc)
 
-    def find_one(self, spec=None):
-        return self.collection.find_one(spec=spec)
