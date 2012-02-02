@@ -73,3 +73,21 @@ class FromDocumentTest(unittest.TestCase):
         fighter = fighter_from_document({"name" : "Forel", "_id" : "555"})
         self.assertEqual(fighter.id, "555")
         self.assertEqual(fighter.name, "Forel")
+
+    def test_fighterFromDictWithAllValuesSetIsCompletelyConstructed(self):
+        fighter = fighter_from_document({"name" : "Soraya", "_id" : "556", "initiative" : "1d20+11"})
+        self.assertEqual(fighter.id, "556")
+        self.assertEqual(fighter.name, "Soraya")
+        self.assertEqual(fighter.initiative, Pool(dice=[Die(sides=20, showing=1)], modifier=11))
+
+    def test_fighterFromBlankDictJustHasD20Init(self):
+        fighter = fighter_from_document({})
+        self.assertEqual(fighter.id, None)
+        self.assertEqual(fighter.name, None)
+        self.assertEqual(fighter.initiative, Pool(dice=[Die(sides=20)]))
+
+    def test_fighterWithRolledInitHasProperlySummedInit(self):
+        fighter = fighter_from_document({"name" : "EvilPlugh", "initiative" : "1d20+4 (23)"})
+        self.assertEqual(fighter.id, None)
+        self.assertEqual(fighter.name, "EvilPlugh")
+        self.assertEqual(fighter.initiative, Pool(dice=[Die(sides=20, showing=19)], modifier=4, rolled=True))

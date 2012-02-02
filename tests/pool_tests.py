@@ -130,6 +130,27 @@ class PoolTest(unittest.TestCase):
         pool = Pool(dice=dice, modifier=1)
         self.assertEqual(str(pool), "2d12+3d4+1")
 
+    def test_eqOnTwoNewPoolsReturnsTrue(self):
+        self.assertEqual(Pool(), Pool())
+
+    def test_eqOnPoolAndNoneReturnsFalse(self):
+        self.assertNotEqual(Pool(), None)
+
+    def test_eqOnPoolAnd1ReturnsFalse(self):
+        self.assertNotEqual(Pool(), 1)
+        self.assertNotEqual(1, Pool())
+
+    def test_eqOnPoold6AndPoold8ReturnsFalse(self):
+        self.assertNotEqual(Pool(dice=[Die(sides=6)]), Pool(dice=[Die(sides=8)]))
+
+    def test_eqOnSimilarRolledPoolsThatSumToSameReturnsTrue(self):
+        self.assertEqual(Pool(dice=[Die(sides=6, showing=1), Die(sides=6, showing=6)], rolled=True),
+            Pool(dice=[Die(sides=6, showing=4), Die(sides=6, showing=3)], rolled=True))
+
+    def test_eqOnDifferentRolledPoolsThatSumToSameReturnsFalse(self):
+        self.assertNotEqual(Pool(dice=[Die(sides=6, showing=1), Die(sides=6, showing=6)], rolled=True),
+            Pool(dice=[Die(sides=60, showing=4), Die(sides=60, showing=3)], rolled=True))
+
     @patch.object(Die, 'roll')
     def test_rollRollsDie(self, dieMock):
         dieMock.return_value = 6
@@ -157,6 +178,7 @@ class PoolTest(unittest.TestCase):
         def increment_roll(*args, **kwargs):
             randintMock.return_value += 1
             return randintMock.return_value
+
         randintMock.side_effect = increment_roll
         pool = Pool(dice=[Die(), Die()])
 

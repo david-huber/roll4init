@@ -1,3 +1,4 @@
+from dice.dice_parser import DiceParser
 from tracker.fighter import Fighter
 
 __all__ = ['FighterRepository', 'fighter_from_document']
@@ -6,7 +7,8 @@ __all__ = ['FighterRepository', 'fighter_from_document']
 def fighter_from_document(doc):
     if doc is None:
         return None
-    return Fighter(id=doc.get("_id"), name=doc.get("name"))
+    diceParser = DiceParser();
+    return Fighter(id=doc.get("_id"), name=doc.get("name"), initiative=diceParser.parse(doc.get("initiative", "1d20")))
 
 class FighterRepository:
     

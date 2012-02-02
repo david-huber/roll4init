@@ -37,6 +37,14 @@ class Pool:
     def _filter_rolls(self, function):
         return Pool(filter(function, self._dice))
 
+    def __eq__(self, other):
+        if other == None or not isinstance(other, Pool):
+            return False
+        return str(self) == str(other)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     def __str__(self):
         diceStrings = ["d{0}".format(d.get_sides()) for d in sorted(self._dice, key=lambda d: d.get_sides(), reverse=True)]
         summedStrings = ["{0}{1}".format(len(list(group)), key) for key, group in groupby(diceStrings)]
