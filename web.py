@@ -1,7 +1,8 @@
 import os, re
 from flask import Flask, request, session, g, redirect, url_for, render_template, flash
-from persist import mongo
+from persist import mongo, FighterRepository
 from facebook import Facebook
+from routes import *
 
 try:
     import debug
@@ -34,6 +35,7 @@ def get_access_token():
 @app.before_request
 def before_request():
     g.mongo = mongo.connect_db(app)
+    g.fighterRepository = FighterRepository(g.mongo.database.fighters)
 
 @app.teardown_request
 def teardown_request(exception):
@@ -67,6 +69,8 @@ def logout():
     facebook.clear()
     flash('You were logged out')
     return redirect(url_for('show_entries'))
+
+add_fighter_routes(app, g)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))

@@ -1,58 +1,87 @@
 import unittest
 from persist import *
 from tracker import *
-from mock import Mock
+from mock import Mock, MagicMock, sentinel, patch
 from dice import *
 
 class FighterRepositoryTest(unittest.TestCase):
+
+    def setUp(self):
+        self.connection_mock = self.create_connection_mock()
+        self.repository = FighterRepository(self.connection_mock)
 
     def create_connection_mock(self):
         connection_mock = Mock()
         connection_mock.save = Mock()
         connection_mock.remove = Mock()
+        connection_mock.find = Mock()
         connection_mock.find_one = Mock()
         return connection_mock
 
     def test_saveUnidentifiedFighterToCollection(self):
-        connection_mock = self.create_connection_mock()
-        repo = FighterRepository(connection_mock)
-        repo.save(Fighter())
-        connection_mock.save.assert_called_once_with({ "initiative" : "1d20" })
+        self.repository.save(Fighter())
+        self.connection_mock.save.assert_called_once_with({ "initiative" : "1d20" })
 
     def test_saveUnidentifiedFastFighterToCollection(self):
-        connection_mock = self.create_connection_mock()
-        repo = FighterRepository(connection_mock)
-        repo.save(Fighter(initiative=Pool(dice=[Die(sides=20)], modifier=20)))
-        connection_mock.save.assert_called_once_with({ "initiative" : "1d20+20" })
+        self.repository.save(Fighter(initiative=Pool(dice=[Die(sides=20)], modifier=20)))
+        self.connection_mock.save.assert_called_once_with({ "initiative" : "1d20+20" })
 
     def test_saveNewDamakosToCollection(self):
-        connection_mock = self.create_connection_mock()
-        repo = FighterRepository(connection_mock)
-        repo.save(Fighter(name="Damakos"))
-        connection_mock.save.assert_called_once_with({ "initiative" : "1d20", "name" : "Damakos" })
+        self.repository.save(Fighter(name="Damakos"))
+        self.connection_mock.save.assert_called_once_with({ "initiative" : "1d20", "name" : "Damakos" })
 
     def test_saveExistingForelToCollection(self):
-        connection_mock = self.create_connection_mock()
-        repo = FighterRepository(connection_mock)
-        repo.save(Fighter(name="Forel", id="1"))
-        connection_mock.save.assert_called_once_with({ "initiative" : "1d20", "name" : "Forel", "_id" : "1" })
+        self.repository.save(Fighter(name="Forel", id="1"))
+        self.connection_mock.save.assert_called_once_with({ "initiative" : "1d20", "name" : "Forel", "_id" : "1" })
 
     def test_removeUnidentifiedFighterRaisesValueError(self):
-        connection_mock = self.create_connection_mock()
-        repo = FighterRepository(connection_mock)
-        self.assertRaises(ValueError, repo.remove, Fighter())
+        self.assertRaises(ValueError, self.repository.remove, Fighter())
 
     def test_removeNewDamakosFromCollection(self):
-        connection_mock = self.create_connection_mock()
-        repo = FighterRepository(connection_mock)
-        repo.remove(Fighter(name="Damakos"))
-        connection_mock.remove.assert_called_once_with({ "name" : "Damakos" })
+        self.repository.remove(Fighter(name="Damakos"))
+        self.connection_mock.remove.assert_called_once_with({ "name" : "Damakos" })
 
     def test_removeExistingForelFromCollection(self):
-        connection_mock = self.create_connection_mock()
-        repo = FighterRepository(connection_mock)
-        repo.remove(Fighter(name="Forel", id="1"))
-        connection_mock.remove.assert_called_once_with({ "name" : "Forel", "_id" : "1" })
+        self.repository.remove(Fighter(name="Forel", id="1"))
+        self.connection_mock.remove.assert_called_once_with({ "name" : "Forel", "_id" : "1" })
+
+    @patch.object(repository, 'fighter_from_document')
+    def test_findWithNoArgumentsCallsToCollection(self, fromPatch):
+        self.connection_mock.find.return_value = [sentinel.find_object]
+        fromPatch.return_value = sentinel.fighter_object
+        fighters = self.repository.find()
+        self.connection_mock.find.assert_called_once()
+        fromPatch.assert_called_once_with(sentinel.find_object)
+        self.assertEqual(fighters, [sentinel.fighter_object])
+
+    @patch.object(repository, 'fighter_from_document')
+    def test_findWithArgumentsCallsToCollection(self, fromPatch):
+        self.connection_mock.find.return_value = [sentinel.find_object, sentinel.find_object]
+        fromPatch.return_value = sentinel.fighter_object
+        fighters = self.repository.find(something='x', something_else=1)
+        self.connection_mock.find.assert_called_once(something='x', something_else=1)
+        fromPatch.assert_called_with(sentinel.find_object)
+        self.assertEqual(fromPatch.call_count, 2)
+        self.assertEqual(fighters, [sentinel.fighter_object, sentinel.fighter_object])
+
+    @patch.object(repository, 'fighter_from_document')
+    def test_findOneWithNoArgumentsCallsToCollection(self, fromPatch):
+        self.connection_mock.find_one.return_value = sentinel.find_object
+        fromPatch.return_value = sentinel.fighter_object
+        fighters = self.repository.find_one()
+        self.connection_mock.find_one.assert_called_once()
+        fromPatch.assert_called_once_with(sentinel.find_object)
+        self.assertEqual(fighters, sentinel.fighter_object)
+
+    @patch.object(repository, 'fighter_from_document')
+    def test_findOneWithArgumentsCallsToCollection(self, fromPatch):
+        self.connection_mock.find_one.return_value = sentinel.find_object
+        fromPatch.return_value = sentinel.fighter_object
+        fighters = self.repository.find_one(something='x', something_else=1)
+        self.connection_mock.find_one.assert_called_once(something='x', something_else=1)
+        fromPatch.assert_called_once_with(sentinel.find_object)
+        self.assertEqual(fighters, sentinel.fighter_object)
+
 
 class FromDocumentTest(unittest.TestCase):
 
